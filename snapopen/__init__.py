@@ -114,12 +114,12 @@ class SnapOpenPluginInstance:
 		pattern = pattern.replace(" ","*")
 		#modify lines below as needed, these defaults work pretty well
 		rawpath = self._rootdir.replace("file://", "")
-		filefilter = " | grep -s -v \"/\.\""
+		filefilter = " | grep -s -v \"/\.\" 2>/dev/null"
 		cmd = ""
 		if self._show_hidden:
 			filefilter = ""
 		if len(pattern) > 0:
-			cmd = "cd " + rawpath + "; find . -maxdepth 10 -depth -type f -iwholename \"*" + pattern + "*\" " + filefilter + " | grep -v \"~$\" | head -n " + repr(max_result + 1) + " | sort"
+			cmd = "cd " + rawpath + "; find . -maxdepth 10 -depth -type f -iwholename \"*" + pattern + "*\" " + filefilter + " | grep -v \"~$\" 2>/dev/null | head -n " + repr(max_result + 1) + " | sort"
 			self._snapopen_window.set_title("Searching ... ")
 		else:
 			self._snapopen_window.set_title("Enter pattern ... ")	
