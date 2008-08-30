@@ -15,8 +15,8 @@ max_result = 50
 
 ui_str="""<ui>
 <menubar name="MenuBar">
-	<menu name="SnapOpenMenu" action="SnapOpenMenuAction">
-		<placeholder name="SnapOpen Options">
+	<menu name="FileMenu" action="File">
+		<placeholder name="FileOps_2">
 			<menuitem name="SnapOpen" action="SnapOpenAction"/>
 		</placeholder>
 	</menu>
@@ -53,9 +53,8 @@ class SnapOpenPluginInstance:
 	def _insert_menu( self ):
 		manager = self._window.get_ui_manager()
 		self._action_group = gtk.ActionGroup( "SnapOpenPluginActions" )
-		snapopen_menu_action = gtk.Action( name="SnapOpenMenuAction", label="Snap", tooltip="Snap tools", stock_id=None )
-		self._action_group.add_action( snapopen_menu_action )
-		snapopen_action = gtk.Action( name="SnapOpenAction", label="Open...\t", tooltip="Open a file", stock_id=gtk.STOCK_OPEN )
+		snapopen_action = gtk.Action( name="SnapOpenAction", label="Snap Open...\t",
+			tooltip="Snap open a file", stock_id=gtk.STOCK_OPEN )
 		snapopen_action.connect( "activate", lambda a: self.on_snapopen_action() )
 		self._action_group.add_action_with_accel( snapopen_action, "<Ctrl><Alt>o" )
 		manager.insert_action_group( self._action_group, 0 )
