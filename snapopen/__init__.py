@@ -5,7 +5,7 @@ import gconf
 import gnomevfs
 import pygtk
 pygtk.require('2.0')
-import os, os.path, gobject
+import os, os.path, gobject, urllib
 
 # set this to true for gedit versions before 2.16
 pre216_version = False
@@ -112,14 +112,21 @@ class SnapOpenPluginInstance:
 			return
 		pattern = self._glade_entry_name.get_text()
 		pattern = pattern.replace(" ","*")
-		#modify lines below as needed, these defaults work pretty well
-		rawpath = self._rootdir.replace("file://", "")
+		
+		# modify lines below as needed, these defaults work pretty well
 		filefilter = " | grep -s -v \"/\.\" 2>/dev/null"
 		cmd = ""
 		if self._show_hidden:
 			filefilter = ""
 		if len(pattern) > 0:
-			cmd = "cd " + rawpath + "; find . -maxdepth 10 -depth -type f -iwholename \"*" + pattern + "*\" " + filefilter + " | grep -v \"~$\" 2>/dev/null | head -n " + repr(max_result + 1) + " | sort"
+			cmd = ('cd "%(path)s"' +
+				' && find . -maxdepth 10 -depth -type f -iwholename "*%(pattern)s*"' +
+				' | grep -v -E "(/\.|~$)" 2>/dev/null' +   # ignore hidden and backup files
+				' | head -n %(max_results)d' +
+				' | sort') % \
+				{ 'path'        : self._shell_escape(self._rootdir),
+				  'pattern'     : self._shell_escape(pattern),
+				  'max_results' : max_result + 1 }
 			self._snapopen_window.set_title("Searching ... ")
 		else:
 			self._snapopen_window.set_title("Enter pattern ... ")	
@@ -198,6 +205,18 @@ class SnapOpenPluginInstance:
 		if tab == None:
 			tab = self._window.create_tab_from_uri( uri, self._encoding, 0, False, False )
 		self._window.set_active_tab( tab )
+	
+	# Escapes the given string for so that the return value, when surrounded by quotes, can be
+	# passed to the shell as a single arugment. Example:
+	# 
+	#   >>> print self._shell_escape('hello "world$')
+	#   hello \"world
+	def _shell_escape( self, string ):
+		return string.replace('"', '\\"').replace('$', '\\$')
+
+	# Convert a GNOME file URI, such as "file:///home/foo%20bar/hello.txt"
+	def _file_uri_to_filename( self, uri ):
+		return urllib.unquote_plus(uri.replace("file://", ""))
 
 # EDDT integration
 	def get_eddt_root(self):
@@ -207,7 +226,7 @@ class SnapOpenPluginInstance:
 	  path = os.path.join(base, u'repository')
 	  val = client.get(path)
 	  if val is not None:
-	  	return val.get_string()
+	  	return self._file_uri_to_filename(val.get_string())
 
 # FILEBROWSER integration
 	def get_filebrowser_root(self):
@@ -230,7 +249,7 @@ class SnapOpenPluginInstance:
 		  	self._show_hidden = True
 		  else:
 		  	self._show_hidden = False		  	
-		  return val.get_string()
+		  return self._file_uri_to_filename(val.get_string())
 
 # STANDARD PLUMMING
 class SnapOpenPlugin( gedit.Plugin ):
