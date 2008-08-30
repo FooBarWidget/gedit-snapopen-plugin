@@ -6,6 +6,7 @@ import gnomevfs
 import pygtk
 pygtk.require('2.0')
 import os, os.path, gobject, urllib
+from gtk import gdk
 
 # set this to true for gedit versions before 2.16
 pre216_version = False
@@ -80,7 +81,8 @@ class SnapOpenPluginInstance:
 		self._snapopen_glade.get_widget( "cancel_button" ).connect( "clicked", lambda a: self._snapopen_window.hide())
 		#setup entry field
 		self._glade_entry_name = self._snapopen_glade.get_widget( "entry_name" )
-		self._glade_entry_name.connect("key-release-event", self.on_pattern_entry)		
+		self._glade_entry_name.connect("key-press-event", self.on_key_press)
+		self._glade_entry_name.connect("key-release-event", self.on_pattern_entry)
 		#setup list field
 		self._hit_list = self._snapopen_glade.get_widget( "hit_list" )
 		self._hit_list.connect("select-cursor-row", self.on_select_from_list)
@@ -104,9 +106,31 @@ class SnapOpenPluginInstance:
 	def on_select_from_list(self, widget, event):
 		self.open_selected_item(event)
 
+	# Forward Up and Down key press events to the hit list.
+	def on_key_press( self, widget, event ):
+		if event.keyval in (gtk.keysyms.Up, gtk.keysyms.Down):
+			widget.stop_emission("key-press-event")
+			selection = self._hit_list.get_selection()
+			model, rows = selection.get_selected_rows()
+			if len(rows) > 0:
+				if event.keyval == gtk.keysyms.Up:
+					path = (rows[0][0] - 1, )
+				else:
+					path = (rows[0][0] + 1, )
+				try:
+					iter = model.get_iter(path)
+				except ValueError:
+					iter = None
+				if iter != None:
+					selection.unselect_all()
+					selection.select_iter(iter)
+			return True
+		
 	#keyboard event on entry field
 	def on_pattern_entry( self, widget, event ):
 		oldtitle = self._snapopen_window.get_title().replace(" * too many hits", "")
+		if event.keyval in (gtk.keysyms.Up, gtk.keysyms.Down):
+			return
 		if event.keyval == gtk.keysyms.Return:
 			self.open_selected_item( event )
 			return
