@@ -207,7 +207,7 @@ class SnapOpenPluginInstance:
 	def open_selected_item( self, event ):
 		selected = []
 		self._hit_list.get_selection().selected_foreach(self.foreach, selected)
-		for selected_file in	selected:
+		for selected_file in selected:
 			self._open_file ( selected_file )
 		self._snapopen_window.hide()
 	
@@ -221,7 +221,7 @@ class SnapOpenPluginInstance:
 	
 	#opens (or switches to) the given file
 	def _open_file( self, filename ):
- 		uri = self._rootdir + "/" + filename
+ 		uri = "file://" + self._rootdir + "/" + filename
 		if pre216_version:
 			tab = self.old_get_tab_from_uri(self._window, uri)
 		else:
