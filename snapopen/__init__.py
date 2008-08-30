@@ -189,11 +189,11 @@ class SnapOpenPluginInstance:
 	
 	#gedit < 2.16 version (get_tab_from_uri)
 	def old_get_tab_from_uri(self, window, uri):
-          docs = window.get_documents()
-	  for doc in docs:
-            if doc.get_uri() == uri:
-              return gedit.tab_get_from_document(doc)
-          return None
+		docs = window.get_documents()
+		for doc in docs:
+			if doc.get_uri() == uri:
+				return gedit.tab_get_from_document(doc)
+		return None
 	
 	#opens (or switches to) the given file
 	def _open_file( self, filename ):
@@ -220,36 +220,36 @@ class SnapOpenPluginInstance:
 
 # EDDT integration
 	def get_eddt_root(self):
-	  base = u'/apps/gedit-2/plugins/eddt'
-	  client = gconf.client_get_default()
-	  client.add_dir(base, gconf.CLIENT_PRELOAD_NONE)
-	  path = os.path.join(base, u'repository')
-	  val = client.get(path)
-	  if val is not None:
-	  	return self._file_uri_to_filename(val.get_string())
+		base = u'/apps/gedit-2/plugins/eddt'
+		client = gconf.client_get_default()
+		client.add_dir(base, gconf.CLIENT_PRELOAD_NONE)
+		path = os.path.join(base, u'repository')
+		val = client.get(path)
+		if val is not None:
+			return self._file_uri_to_filename(val.get_string())
 
 # FILEBROWSER integration
 	def get_filebrowser_root(self):
-	  base = u'/apps/gedit-2/plugins/filebrowser/on_load'
-	  client = gconf.client_get_default()
-	  client.add_dir(base, gconf.CLIENT_PRELOAD_NONE)
-	  path = os.path.join(base, u'virtual_root')
-	  val = client.get(path)
-	  if val is not None:
-	  	#also read hidden files setting
-		  base = u'/apps/gedit-2/plugins/filebrowser'
-		  client = gconf.client_get_default()
-		  client.add_dir(base, gconf.CLIENT_PRELOAD_NONE)
-		  path = os.path.join(base, u'filter_mode')
-		  try:
-			  fbfilter = client.get(path).get_string()
-		  except AttributeError:
-			  fbfilter = "hidden"
-		  if fbfilter.find("hidden") == -1:
-		  	self._show_hidden = True
-		  else:
-		  	self._show_hidden = False		  	
-		  return self._file_uri_to_filename(val.get_string())
+		base = u'/apps/gedit-2/plugins/filebrowser/on_load'
+		client = gconf.client_get_default()
+		client.add_dir(base, gconf.CLIENT_PRELOAD_NONE)
+		path = os.path.join(base, u'virtual_root')
+		val = client.get(path)
+		if val is not None:
+			# Also read hidden files setting
+			base = u'/apps/gedit-2/plugins/filebrowser'
+			client = gconf.client_get_default()
+			client.add_dir(base, gconf.CLIENT_PRELOAD_NONE)
+			path = os.path.join(base, u'filter_mode')
+			try:
+				fbfilter = client.get(path).get_string()
+			except AttributeError:
+				fbfilter = "hidden"
+			if fbfilter.find("hidden") == -1:
+				self._show_hidden = True
+			else:
+				self._show_hidden = False		  	
+			return self._file_uri_to_filename(val.get_string())
 
 # STANDARD PLUMMING
 class SnapOpenPlugin( gedit.Plugin ):
