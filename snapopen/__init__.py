@@ -123,6 +123,7 @@ class SnapOpenPluginInstance:
 				if iter != None:
 					selection.unselect_all()
 					selection.select_iter(iter)
+					self._hit_list.scroll_to_cell(path)
 			return True
 		
 	#keyboard event on entry field
