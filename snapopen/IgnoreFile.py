@@ -1,6 +1,12 @@
 import os.path
 from fnmatch import fnmatch
 
+try:
+	import psyco
+	from psyco.classes import __metaclass__
+except:
+	pass
+
 # Patterns in ignore files are supposed to work similar to .gitignore:
 #
 # - If the pattern does not contain a slash /, it will be treated as a

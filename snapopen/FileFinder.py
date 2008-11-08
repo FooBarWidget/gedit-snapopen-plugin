@@ -2,6 +2,12 @@ import os
 import os.path
 import fnmatch
 
+try:
+	import psyco
+	from psyco.classes import __metaclass__
+except:
+	pass
+
 from IgnoreFile import IgnoreFile
 
 if 'relpath' in dir(os.path):
