@@ -118,10 +118,13 @@ class SnapOpenPluginInstance:
 					path = (rows[0][0] - 1, )
 				else:
 					path = (rows[0][0] + 1, )
-				try:
-					iter = model.get_iter(path)
-				except ValueError:
+				if path[0] < 0:
 					iter = None
+				else:
+					try:
+						iter = model.get_iter(path)
+					except ValueError:
+						iter = None
 				if iter != None:
 					selection.unselect_all()
 					selection.select_iter(iter)
