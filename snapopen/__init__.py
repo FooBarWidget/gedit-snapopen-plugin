@@ -8,6 +8,8 @@ pygtk.require('2.0')
 import os, os.path, gobject, urllib
 from gtk import gdk
 
+from FileFinder import FileFinder
+
 # set this to true for gedit versions before 2.16
 pre216_version = False
 
@@ -135,44 +137,25 @@ class SnapOpenPluginInstance:
 			self.open_selected_item( event )
 			return
 		pattern = self._glade_entry_name.get_text()
-		pattern = pattern.replace(" ","*")
 		
-		# modify lines below as needed, these defaults work pretty well
-		filefilter = " | grep -s -v \"/\.\" 2>/dev/null"
-		cmd = ""
-		if self._show_hidden:
-			filefilter = ""
+		# TODO: respect self._show_hidden
+		# TODO: respect max_result
+		
+		self._liststore.clear()
 		if len(pattern) > 0:
-			cmd = ('cd "%(path)s"' +
-				' && find . -maxdepth 10 -depth -type f -iwholename "*%(pattern)s*"' +
-				' | grep -v -E "(/\.|~$)" 2>/dev/null' +   # ignore hidden and backup files
-				' | head -n %(max_results)d' +
-				' | sort') % \
-				{ 'path'        : self._shell_escape(self._rootdir),
-				  'pattern'     : self._shell_escape(pattern),
-				  'max_results' : max_result + 1 }
+			def callback(filename):
+				name = os.path.basename(filename)
+				self._liststore.append([name, filename])
+			
 			self._snapopen_window.set_title("Searching ... ")
+			finder = FileFinder(self._rootdir, "*" + pattern + "*")
+			finder.start(callback)
 		else:
 			self._snapopen_window.set_title("Enter pattern ... ")	
-		#print cmd
-
-		self._liststore.clear()
-		maxcount = 0
-		hits = os.popen(cmd).readlines()
-		for file in hits:
-			file = file.rstrip().replace("./", "") #remove cwd prefix
-			name = os.path.basename(file)			
-			self._liststore.append([name, file])
-			if maxcount > max_result:
-				break
-			maxcount = maxcount + 1
-		if maxcount > max_result:
-			oldtitle = oldtitle + " * too many hits"
 		self._snapopen_window.set_title(oldtitle)
-				
+		
 		selected = []
 		self._hit_list.get_selection().selected_foreach(self.foreach, selected)
-
 		if len(selected) == 0:
 			iter = self._liststore.get_iter_first()
 			if iter != None:

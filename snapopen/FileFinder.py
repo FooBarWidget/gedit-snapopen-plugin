@@ -18,7 +18,10 @@ else:
 class FileFinder:
 	def __init__(self, directory, pattern = None):
 		self.directory = os.path.normcase(os.path.normpath(directory))
-		self.pattern   = pattern
+		if pattern:
+			self.pattern = pattern.lower()
+		else:
+			self.pattern = None
 	
 	def start(self, callback):
 		self._traverse(self.directory, set(), None, callback)
@@ -36,7 +39,7 @@ class FileFinder:
 				ignore_file = IgnoreFile(directory, lines, ignore_file)
 			except (IOError):
 				pass
-			for entry in entries:
+			for entry in sorted(entries):
 				if entry.startswith('.'):
 					# Ignore hidden files.
 					continue
@@ -54,5 +57,5 @@ class FileFinder:
 						self._traverse(norm_path, dirs_seen, ignore_file, callback)
 				else:
 					rel_path = relpath(norm_path, self.directory)
-					if not self.pattern or fnmatch.fnmatch(rel_path, self.pattern):
+					if not self.pattern or fnmatch.fnmatch(rel_path.lower(), self.pattern):
 						callback(rel_path)
